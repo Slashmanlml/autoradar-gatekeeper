@@ -1,24 +1,38 @@
-﻿# 🔐 AutoRadar Gatekeeper — Sistema de Cobro y Activación de Membresías VIP
+# AutoRadar Gatekeeper
 
-![Status](https://img.shields.io/badge/Status-Active-success?style=flat)
-![Architecture](https://img.shields.io/badge/Architecture-Webhooks_%2B_Telegram_Gatekeeper-blue?style=flat)
-![NodeJS](https://img.shields.io/badge/Node.js-20.x-green?style=flat&logo=node.js)
+Entrega acceso a un canal privado de Telegram generando enlaces de invitación de
+**un solo uso** que vencen a las 48 horas, usando la Bot API.
 
-Módulo de **Onboarding y Monetización Automatizada**. Procesa webhooks de pasarelas de pago (MercadoPago / Stripe), valida transacciones y genera enlaces de invitación VIP de un solo uso (`member_limit: 1`) a canales privados de Telegram.
+> ### ⚠️ Estado: prototipo
+>
+> **La pasarela de pago no está integrada.** `PaymentProcessor.handleSuccessfulPayment()`
+> recibe hoy un objeto armado a mano. Antes de usar esto en producción hay que
+> recibir el webhook de la pasarela y **validar su firma**: sin esa verificación,
+> cualquiera que conozca la URL podría reclamar un acceso sin haber pagado.
 
----
+## Corrección importante
 
-## ⚙️ Arquitectura de Entrega de Acceso
+La versión anterior, cuando la API de Telegram fallaba, **devolvía un enlace
+inventado** y lo registraba como éxito:
 
-```text
-[Cliente Paga en Checkout]
-           │
-           ▼
-[Webhook de Pago Confirmado] ──► [Gatekeeper API]
-                                         │
-                                         ▼
-[Telegram API: createChatInviteLink(limit: 1)]
-                                         │
-                                         ▼
-                      [Entrega de Enlace VIP al Cliente]
+```js
+console.log('ℹ️ [Gatekeeper Demo] Enlace VIP simulado listo para canal real.');
+return `https://t.me/+VIP_PASS_${Math.random()...}`;
 ```
+
+En un flujo que entrega acceso pagado eso es lo peor posible: el cliente paga,
+recibe un enlace que no funciona y el sistema informa que todo salió bien. Ahora
+la función **lanza una excepción** y quien la llama decide si reintenta o
+devuelve el dinero.
+
+## Uso
+
+```js
+const link = await TelegramGatekeeper.generateVipInviteLink('-100123456789', 'cliente@mail.com');
+```
+
+Requiere `TELEGRAM_BOT_TOKEN` en el entorno y que el bot sea administrador del canal.
+
+## Licencia
+
+MIT
