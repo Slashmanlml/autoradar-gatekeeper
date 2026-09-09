@@ -1,5 +1,7 @@
 'use strict';
 
+const { callTelegramApi } = require('./telegram');
+
 /**
  * Entrega de acceso a un canal privado de Telegram mediante enlaces de
  * invitación de un solo uso.
@@ -25,24 +27,19 @@ class TelegramGatekeeper {
     if (!token) throw new Error('TELEGRAM_BOT_TOKEN no configurado.');
     if (!channelId) throw new Error('channelId no informado.');
 
-    const res = await fetch(`https://api.telegram.org/bot${token}/createChatInviteLink`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        chat_id: channelId,
-        name: `Pase VIP - ${userEmail}`,
-        member_limit: 1,                                        // un solo uso
-        expire_date: Math.floor(Date.now() / 1000) + 86400 * 2, // vence en 48 h
-      }),
+    const res = await callTelegramApi(token, 'createChatInviteLink', {
+      chat_id: channelId,
+      name: `Pase VIP - ${userEmail}`,
+      member_limit: 1,                                        // un solo uso
+      expire_date: Math.floor(Date.now() / 1000) + 86400 * 2, // vence en 48 h
     });
 
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok || !data.ok || !data.result?.invite_link) {
+    if (!res.ok || !res.data.result?.invite_link) {
       throw new Error(
-        `Telegram rechazó la creación del enlace (HTTP ${res.status}): ${data.description || 'sin detalle'}`
+        `Telegram rechazó la creación del enlace tras ${res.attempts} intento(s): ${res.error.message}`
       );
     }
-    return data.result.invite_link;
+    return res.data.result.invite_link;
   }
 }
 

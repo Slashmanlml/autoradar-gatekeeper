@@ -1,5 +1,6 @@
 'use strict';
 
+const logger = require('./logger');
 const TelegramGatekeeper = require('./gatekeeper');
 
 class PaymentProcessor {
@@ -17,16 +18,16 @@ class PaymentProcessor {
     if (!email) throw new Error('El pago no trae email: no hay a quién entregarle el acceso.');
     if (!channelId) throw new Error('El pago no trae channelId: no se sabe a qué canal dar acceso.');
 
-    console.log(`[pago] confirmado ${transactionId} | ${customerName} <${email}> | plan ${planName}`);
+    logger.log(`[pago] confirmado ${transactionId} | ${customerName} <${email}> | plan ${planName}`);
 
     try {
       const inviteLink = await TelegramGatekeeper.generateVipInviteLink(channelId, email);
-      console.log(`[acceso] enlace entregado a ${email}`);
+      logger.log(`[acceso] enlace entregado a ${email}`);
       return { status: 'COMPLETED', accessGranted: true, inviteLink };
     } catch (err) {
       // El pago existe pero el acceso no se pudo entregar: hay que poder
       // reintentar o devolver el dinero, así que el error no se traga.
-      console.error(`[acceso] FALLÓ la entrega para ${email}: ${err.message}`);
+      logger.error(`[acceso] FALLÓ la entrega para ${email}: ${err.message}`);
       return { status: 'FAILED', accessGranted: false, error: err.message, transactionId };
     }
   }

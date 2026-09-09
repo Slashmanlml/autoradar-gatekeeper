@@ -33,6 +33,30 @@ const link = await TelegramGatekeeper.generateVipInviteLink('-100123456789', 'cl
 
 Requiere `TELEGRAM_BOT_TOKEN` en el entorno y que el bot sea administrador del canal.
 
+## Configuración
+
+```bash
+cp .env.example .env   # completar TELEGRAM_BOT_TOKEN y TELEGRAM_CHANNEL_ID
+npm start              # simulación con pago de ejemplo
+npm test               # 5 tests, sin dependencias externas
+```
+
+## Stack
+
+Node 20+, sin dependencias de producción. Tests con el runner nativo
+(`node --test`). CI en GitHub Actions.
+
+## Docker y logs
+
+```bash
+npm run docker:build
+docker run --rm --env-file .env autoradar-gatekeeper
+```
+
+`LOG_LEVEL` controla el nivel de log (`debug|info|warn|error`, default `info`).
+Los llamados a Telegram reintentan errores de red y HTTP 429/5xx con backoff
+exponencial (3 intentos); los 4xx fallan rápido sin reintentar.
+
 ## Licencia
 
 MIT

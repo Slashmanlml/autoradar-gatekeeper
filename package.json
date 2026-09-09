@@ -1,13 +1,16 @@
 {
   "name": "autoradar-gatekeeper",
   "version": "1.0.0",
-  "description": "",
+  "description": "Entrega acceso a un canal privado de Telegram con enlaces de un solo uso tras un pago confirmado. Prototipo: pasarela sin integrar.",
   "main": "index.js",
+  "engines": { "node": ">=20" },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node index.js",
+    "test": "node --test",
+    "docker:build": "docker build -t autoradar-gatekeeper ."
   },
-  "keywords": [],
+  "keywords": ["telegram-bot", "payments", "saas", "automation"],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "type": "commonjs"
 }
